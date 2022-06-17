@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -22,13 +23,13 @@ import com.example.rainbowfarkle.ui.navigation.Screen
 @Composable
 fun LandingScreen(navController: NavController) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 64.dp),
+        modifier = Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
             modifier = Modifier.fillMaxWidth(),
-            painter = painterResource(id = R.drawable.logo_landing),
+            painter = painterResource(id = R.drawable.logo),
             contentScale = ContentScale.FillWidth,
             contentDescription = "logo"
         )

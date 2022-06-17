@@ -2,7 +2,21 @@
     <string name="app_name">Rainbow Farkle</string>
     <string name="play_game">Play Game</string>
     <string name="players">Players</string>
+    <string name="player_num">Player %d</string>
     <string name="points">Points</string>
     <string name="submit">Submit</string>
     <string name="reset">Reset</string>
+    <string name="roll">Roll</string>
+    <string name="bank_points">Bank Points</string>
+    <string name="end_turn">End Turn</string>
+    <string-array name="places">
+        <item>1st</item>
+        <item>2nd</item>
+        <item>3rd</item>
+        <item>4th</item>
+        <item>5th</item>
+        <item>6th</item>
+        <item>7th</item>
+        <item>8th</item>
+    </string-array>
 </resources>
