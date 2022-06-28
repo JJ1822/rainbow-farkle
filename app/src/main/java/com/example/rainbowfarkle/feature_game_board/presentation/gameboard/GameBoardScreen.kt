@@ -86,16 +86,19 @@ fun GameBoardScreen(
                 )
 
                 DiceList(
-                    dice = state.dice,
+                    diceMap = state.dice,
                     gameState = state.gameState,
-//                    updateDice = state.updateDice,
-                    updateDiceRoll = { viewModel.onEvent(GameBoardEvent.UpdateRollDice) },
+                    rollDice = { viewModel.onEvent(GameBoardEvent.RollDice) },
+                    checkDice = { viewModel.onEvent(GameBoardEvent.CheckDice) },
                     onDiceSelected = {
                         viewModel.onEvent(
                             GameBoardEvent.OnDiceSelected(
                                 it
                             )
                         )
+                    },
+                    bankPoints = {
+                        viewModel.onEvent(GameBoardEvent.BankPoints)
                     }
                 )
 
@@ -112,7 +115,7 @@ fun GameBoardScreen(
                     gameState = state.gameState,
                     hasValidPoints = state.hasValidPoints,
                     onRollClick = { viewModel.onEvent(GameBoardEvent.Roll) },
-                    onBankPointsClick = { viewModel.onEvent(GameBoardEvent.BankPoints) },
+                    onBankPointsClick = { viewModel.onEvent(GameBoardEvent.OnBankClick) },
                     onEndTurnClick = { viewModel.onEvent(GameBoardEvent.EndTurn(it)) }
                 )
             }

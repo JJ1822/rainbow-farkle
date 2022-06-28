@@ -17,5 +17,5 @@ data class GameBoardState(
     val currentPlayerPosition: Int = 0,
     val bankPoints: Int = 0,
     val stashedBankPoints: Int = 0,
-    val updateDice: Boolean = false
+    val isGameOver: Boolean = false
 )

@@ -1,8 +1,15 @@
 package com.example.rainbowfarkle.feature_game_board.presentation.gameboard.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.with
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -15,94 +22,136 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import com.example.rainbowfarkle.feature_game_board.domain.models.Dice
+import com.example.rainbowfarkle.feature_game_board.domain.models.filterNot
 import com.example.rainbowfarkle.feature_game_board.presentation.util.GameState
 
-private const val MID_ANIMATION = 270f
+internal const val ROTATION_VALUE = 270f
+internal const val OFFSET_VALUE = 800f
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ColumnScope.DiceList(
-    dice: Map<Int, Dice>,
+    diceMap: Map<Int, Dice>,
     gameState: GameState,
     onDiceSelected: (Dice) -> Unit,
-    updateDiceRoll: () -> Unit
+    rollDice: () -> Unit,
+    checkDice: () -> Unit,
+    bankPoints: () -> Unit
 ) {
-    val listOfDice = when (dice.values.size) {
-        1, 3 -> dice.values.chunked(1)
-        else -> dice.values.chunked(2)
+    val listOfDice = when (diceMap.values.size) {
+        1, 3 -> diceMap.values.chunked(1)
+        else -> diceMap.values.chunked(2)
     }
-    var animationValue by remember { mutableStateOf(0f) }
-    var updateDice by remember { mutableStateOf(false) }
+    val diceValues by remember { mutableStateOf(Dice.createDice().values) }
+    var offsetValue by remember { mutableStateOf(0f) }
+    var rotationValue by remember { mutableStateOf(0f) }
     val rotation = animateFloatAsState(
-        targetValue = animationValue,
+        targetValue = rotationValue,
         animationSpec = tween(
             durationMillis = 1000,
             easing = LinearEasing,
         ),
+        finishedListener = {
+            if (it == ROTATION_VALUE) rollDice() else checkDice()
+            rotationValue = 0f
+        }
     )
 
+    val offset = animateFloatAsState(
+        targetValue = offsetValue,
+        animationSpec = tween(
+            durationMillis = 1000,
+            easing = LinearEasing,
+        ),
+        finishedListener = {
+            if (it == OFFSET_VALUE) bankPoints() else rollDice()
+            offsetValue = 0f
+        }
+    )
+
+
     LaunchedEffect(gameState) {
-        if (gameState == GameState.ROLLING) {
-            animationValue = if (animationValue == 540f) { 0f } else 540f
+        when (gameState) {
+            GameState.ROLLING -> rotationValue = ROTATION_VALUE
+            GameState.BETWEEN_TURNS -> offsetValue = OFFSET_VALUE
+            else -> {}
         }
     }
 
-    if (rotation.value > 180f && rotation.value < 360f) {
-        updateDice = true
-    }
-
-    LaunchedEffect(updateDice) {
-        if (updateDice) {
-            updateDiceRoll()
-        }
-    }
-
-    Column(
+    AnimatedContent(
         modifier = Modifier
             .weight(1f)
-            .padding(horizontal = 16.dp)
-    ) {
-        listOfDice.forEach { subDice ->
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                subDice.forEach {
-                    Dice(
-                        dice = it,
-                        rotation = rotation,
-                        onDiceSelected = onDiceSelected
-                    )
+            .padding(horizontal = 16.dp),
+        targetState = diceMap,
+        transitionSpec = {
+            slideInHorizontally(animationSpec = tween(200, 1000)) { fullWidth ->
+                fullWidth
+            } with
+                    slideOutHorizontally(
+                        animationSpec = tween(
+                            200,
+                            1000
+                        )
+                    ) { fullWidth ->
+                        fullWidth
+                    }
+        }
+    ) { list ->
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 16.dp)
+        ) {
+            list.values.chunked(2).forEach { subDice ->
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    subDice.forEachIndexed { index, dice ->
+                        Dice(
+                            size = diceMap.size,
+                            dice = dice,
+                            rotation = rotation,
+                            offset = offset,
+                            placeholderDice = diceValues.filterNot(dice).random(),
+                            onDiceSelected = onDiceSelected
+                        )
+                    }
                 }
             }
         }
     }
+
+//    Column(
+//        modifier = Modifier
+//            .weight(1f)
+//            .padding(horizontal = 16.dp)
+//    ) {
+//        listOfDice.forEach { subDice ->
+//            Row(
+//                modifier = Modifier
+//                    .weight(1f)
+//                    .fillMaxWidth()
+//            ) {
+//                subDice.forEachIndexed { index, dice ->
+//                    Dice(
+//                        size = diceMap.size,
+//                        dice = dice,
+//                        rotation = rotation,
+//                        offset = offset,
+//                        placeholderDice = diceValues.filterNot(dice).random(),
+//                        onDiceSelected = onDiceSelected
+//                    )
+//                }
+//            }
+//        }
+//    }
 }
 
-//@Composable
-//private fun RowScope.DiceImage(
-//    contentAlignment: Alignment = Alignment.Center,
-//    dice: Dice,
-//    onDiceSelected: (Dice) -> Unit
-//) {
-//    Box(
-//        modifier = Modifier
-//            .padding(16.dp)
-//            .weight(1f)
-//            .fillMaxHeight(),
-//        contentAlignment = contentAlignment
-//    ) {
-//        Image(
-//            modifier = Modifier
-//                .fillMaxHeight()
-//                .aspectRatio(1f)
-//                .clip(RoundedCornerShape(18.dp))
-//                .clickable { onDiceSelected(dice) },
-//            contentScale = ContentScale.FillBounds,
-//            painter = painterResource(id = if (dice.isSelected) R.drawable.test else dice.info.drawableId),
-//            contentDescription = null
-//        )
-//    }
-//}
+fun AnimatedContent(modifier: Modifier, targetState: List<List<Dice>>, transitionSpec: AnimatedContentScope<List<List<Dice>>>.() -> Unit, content: AnimatedVisibilityScope.(targetState: List<List<Dice>>) -> Unit) {
+
+}

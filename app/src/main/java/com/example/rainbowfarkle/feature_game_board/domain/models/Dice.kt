@@ -7,7 +7,8 @@ data class Dice(
     val position: Int,
     val info: DiceInfo,
     val isSelected: Boolean,
-    val locked: Boolean
+    val locked: Boolean,
+    val animationState: AnimationState = AnimationState.NONE
 ) {
     companion object {
         fun createDice(): Map<Int, Dice> = DiceInfo.values().mapIndexed { index, diceInfo ->
@@ -18,7 +19,6 @@ data class Dice(
                 locked = false
             )
         }.toMap()
-
     }
 }
 
@@ -33,3 +33,10 @@ enum class DiceInfo(
     THREE(R.drawable.dice_three, 3),
     SIX(R.drawable.dice_six, 6),
 }
+
+enum class AnimationState {
+    NONE,
+    ANIMATE
+}
+
+fun Iterable<Dice>.filterNot(dice: Dice) = filterNot { it.info.value == dice.info.value }

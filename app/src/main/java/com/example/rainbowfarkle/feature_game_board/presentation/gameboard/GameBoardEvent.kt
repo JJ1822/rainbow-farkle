@@ -13,9 +13,11 @@ sealed class GameBoardEvent {
     object ResetSettings : GameBoardEvent()
     object ResetPlayers : GameBoardEvent()
     object Roll : GameBoardEvent()
+    object OnBankClick : GameBoardEvent()
     object BankPoints : GameBoardEvent()
     object Dismiss : GameBoardEvent()
-    object UpdateRollDice : GameBoardEvent()
+    object RollDice : GameBoardEvent()
+    object CheckDice : GameBoardEvent()
 
     class EndTurn(val player: Player) : GameBoardEvent()
     class OnTextChange(val text: String, val player: Player) : GameBoardEvent()

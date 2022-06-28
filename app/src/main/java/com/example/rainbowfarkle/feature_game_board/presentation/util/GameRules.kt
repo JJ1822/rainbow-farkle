@@ -17,5 +17,6 @@ enum class GameState {
     PLAYING,
     END,
     FARKLE,
-    PRE
+    PRE,
+    BETWEEN_TURNS
 }

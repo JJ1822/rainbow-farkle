@@ -1,8 +1,5 @@
 package com.example.rainbowfarkle.feature_game_board.presentation.gameboard.components
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +17,6 @@ import com.example.rainbowfarkle.R
 import com.example.rainbowfarkle.feature_game_board.domain.models.Player
 import com.example.rainbowfarkle.feature_game_board.presentation.util.GameState
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun BottomButtonRow(
     player: Player,
@@ -31,7 +27,7 @@ fun BottomButtonRow(
     onBankPointsClick: () -> Unit
 ) {
     Row(modifier = Modifier.padding(horizontal = 16.dp)) {
-        if (gameState == GameState.ROLLING || gameState == GameState.START_ROUND) {
+        if (gameState == GameState.START_ROUND) {
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onRollClick,

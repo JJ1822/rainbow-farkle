@@ -2,6 +2,7 @@ package com.example.rainbowfarkle.feature_game_board.presentation.gameboard
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.example.rainbowfarkle.feature_game_board.domain.models.AnimationState
 import com.example.rainbowfarkle.feature_game_board.domain.models.Dice
 import com.example.rainbowfarkle.feature_game_board.domain.models.Dice.Companion.createDice
 import com.example.rainbowfarkle.feature_game_board.domain.models.DiceInfo
@@ -32,9 +33,11 @@ class GameBoardViewModel @Inject constructor(
             GameBoardEvent.ResetSettings -> resetSettings()
             GameBoardEvent.ResetPlayers -> resetPlayerNames()
             GameBoardEvent.Roll -> roll()
+            GameBoardEvent.OnBankClick -> onBankClick()
             GameBoardEvent.BankPoints -> bankPoints()
             GameBoardEvent.Dismiss -> dismiss()
-            GameBoardEvent.UpdateRollDice -> updateRolledDice()
+            GameBoardEvent.RollDice -> rollDice()
+            GameBoardEvent.CheckDice -> checkDice()
 
             is GameBoardEvent.EndTurn -> endTurn(event.player)
             is GameBoardEvent.OnTextChange -> onTextChange(event.text, event.player)
@@ -112,7 +115,9 @@ class GameBoardViewModel @Inject constructor(
     private fun endTurn(player: Player) {
         val currentPlayerPoints = player.points + state.stashedBankPoints + state.bankPoints
         val nextPlayerPosition = (state.currentPlayerPosition + 1).mod(state.players.size)
-        val gameState = if (state.players[nextPlayerPosition].isWinner) GameState.END else GameState.START_ROUND
+        val gameState = if (state.isGameOver && state.players[nextPlayerPosition].isWinner) {
+            GameState.END
+        } else GameState.START_ROUND
 
         updateState {
             copy(
@@ -130,7 +135,8 @@ class GameBoardViewModel @Inject constructor(
                         )
                     } else currentPlayer
                 },
-                currentPlayerPosition = nextPlayerPosition
+                currentPlayerPosition = nextPlayerPosition,
+                isGameOver = if (state.isGameOver) state.isGameOver else currentPlayerPoints >= state.pointsToWin
             )
         }
     }
@@ -143,16 +149,22 @@ class GameBoardViewModel @Inject constructor(
         }
     }
 
-    private fun updateRolledDice() {
-        val rolledDice = state.dice.mapValues { it.value.copy(info = DiceInfo.values().random()) }
-        val gameState = if (farkleDetector.isFarkle(rolledDice.values)) GameState.FARKLE else GameState.PLAYING
-
+    private fun rollDice() {
         updateState {
             copy(
-                dice = rolledDice,
-                gameState = gameState
+                dice = state.dice.mapValues { it.value.copy(info = DiceInfo.values().random()) }
             )
         }
+    }
+
+    private fun checkDice() {
+        val gameState = if (farkleDetector.isFarkle(state.dice.values)) GameState.FARKLE else GameState.PLAYING
+
+        updateState { copy( gameState = gameState) }
+    }
+
+    private fun onBankClick() {
+        bankPoints()
     }
 
     private fun bankPoints() {
@@ -160,7 +172,7 @@ class GameBoardViewModel @Inject constructor(
             copy(
                 stashedBankPoints = stashedBankPoints + bankPoints,
                 bankPoints = 0,
-                gameState = GameState.ROLLING,
+//                gameState = GameState.ROLLING,
                 secondaryDice = secondaryDice.map { it.copy(locked = true) }.takeIf { it.size != 6 } ?: emptyList(),
                 hasValidPoints = false,
                 dice = dice.filterNot { it.value.isSelected }.ifEmpty { createDice() }
